@@ -173,9 +173,9 @@ This project is protected under the [MIT](https://mit-license.org/) License. For
 ---
 
 ## 🙌 Acknowledgments
-Ollama : https://github.com/ollama/ollama
-Appopener :  https://github.com/athrvvvv/AppOpener
-Reportlab JSON2PDF: https://docs.reportlab.com/json2pdf/
-tkinter : https://docs.python.org/3/library/tkinter.html
+Ollama : https://github.com/ollama/ollama \n
+Appopener :  https://github.com/athrvvvv/AppOpener \n
+Reportlab JSON2PDF: https://docs.reportlab.com/json2pdf/ \n
+tkinter : https://docs.python.org/3/library/tkinter.html \n
 @chyok- https://github.com/chyok/ollama-gui
 ---
