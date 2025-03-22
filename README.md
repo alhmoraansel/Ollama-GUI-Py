@@ -38,6 +38,7 @@
 ## 📍 Overview
 
 - Ollama is messy with commandline
+- How to use ollama? - [Read this guide made by me](https://docs.google.com/document/d/1Qn2j3qRyU1Mjof-7TCX9Y4QjOosOogjCr1NzjuIS8rg/edit?usp=sharing) (for an extremely useful tool (Hint:Uncensor Deepseek) and installation steps)
 - No option to store history of chats for further referneces
 - Therefore, I forked a repo (https://github.com/chyok/ollama-gui) and modified it to have commonly used functions. This app comes with built in global shortcuts, easy to modify code, and chat history management at user's disposal. Add this to your arsenal to enhance ollama experience.
 
