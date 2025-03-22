@@ -5,9 +5,9 @@
 </p>
 <p align="left">
 	<img src="https://camo.githubusercontent.com/9c890a042106e0f2dbc2129dc31941ea8d53449e567aa028532d51316a8b7820/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6963656e73652f6368796f6b2f6f6c6c616d612d677569" alt="license">
-	<img src="https://img.shields.io/github/last-commit/alhmoraansel/ollama-gui-python?style=flat-square&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/alhmoraansel/ollama-gui-python?style=flat-square&color=0080ff" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/alhmoraansel/ollama-gui-python?style=flat-square&color=0080ff" alt="repo-language-count">
+	<img src="https://img.shields.io/github/last-commit/alhmoraansel/Ollama-GUI-Py?style=flat-square&logo=git&logoColor=white&color=0080ff" alt="last-commit">
+	<img src="https://img.shields.io/github/languages/top/alhmoraansel/Ollama-GUI-Py?style=flat-square&color=0080ff" alt="repo-top-language">
+	<img src="https://img.shields.io/github/languages/count/alhmoraansel/Ollama-GUI-Py?style=flat-square&color=0080ff" alt="repo-language-count">
 </p>
 <p align="left">Built with the tools and technologies:</p>
 <p align="left">
@@ -38,6 +38,7 @@
 ## 📍 Overview
 
 - Ollama is messy with commandline
+- How to use ollama? - [Read this guide made by me](https://docs.google.com/document/d/1Qn2j3qRyU1Mjof-7TCX9Y4QjOosOogjCr1NzjuIS8rg/edit?usp=sharing) (for an extremely useful tool (Hint:Uncensor Deepseek) and installation steps)
 - No option to store history of chats for further referneces
 - Therefore, I forked a repo (https://github.com/chyok/ollama-gui) and modified it to have commonly used functions. This app comes with built in global shortcuts, easy to modify code, and chat history management at user's disposal. Add this to your arsenal to enhance ollama experience.
 
@@ -64,7 +65,8 @@
 ```sh
 └── ollama-gui-python/
     ├── build
-    │   └── main_logic
+    │   └── exe.win-amd64-3.13
+    │   |     └── main_logic.exe
     ├── gui.py
     ├── icon.ico
     ├── main_logic.py
@@ -172,5 +174,11 @@ This project is protected under the [MIT](https://mit-license.org/) License. For
 ---
 
 ## 🙌 Acknowledgments
-@chyok- https://github.com/chyok/ollama-gui
+---
+- [Ollama](https://github.com/ollama/ollama)
+- [Appopener](https://github.com/athrvvvv/AppOpener)
+- [Reportlab JSON2PDF](https://docs.reportlab.com/json2pdf/)
+- [tkinter](https://docs.python.org/3/library/tkinter.html)
+- [chyok](https://github.com/chyok/ollama-gui)
+
 ---
