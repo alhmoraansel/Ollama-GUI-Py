@@ -234,7 +234,10 @@ class OllamaInterfaceLogic:
     def restore_chat_history(self):
         if self.ai_running:
             return
-        file_path = filedialog.askopenfilename(filetypes=[("JSON files", "*.json")])
+        chats_dir = os.path.join(os.getcwd(), "_chats")
+        if not os.path.exists(chats_dir):
+            os.makedirs(chats_dir)
+        file_path = filedialog.askopenfilename(initialdir=chats_dir, title="Load Chat History",filetypes=[("JSON files", "*.json"), ("All files", "*.*")])
         if file_path:
             self.loading_messages = True
             Thread(target=self.delayed_loading_messages_reset).start()

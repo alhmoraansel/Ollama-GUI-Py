@@ -1,9 +1,16 @@
 import os
-import ctypes, platform, threading, tkinter as tk, urllib.request, webbrowser
+import ctypes
+import platform
+import threading
+import tkinter as tk
+import urllib.request
+import webbrowser
 from bs4 import BeautifulSoup
 from tkinter import ttk, font, messagebox, filedialog
 from typing import Optional
+import subprocess  # Import subprocess for opening file explorer
 from shared_globals import *
+
 
 class GUI:
     def __init__(self, root: tk.Tk, main_logic):
@@ -79,20 +86,39 @@ class GUI:
         frame_bg = "#1e1e1e" if dark_mode else "#f0f0f0"
         entry_bg = "#444444" if dark_mode else "#ffffff"
         entry_fg = "#ffffff" if dark_mode else "#000000"
+
         self.root.config(bg=bg_color)
-        self.main_logic.chat_box.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="yellow")
+
+        # Apply to Text widgets
+        self.main_logic.chat_box.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="yellow",
+                                        insertbackground=text_fg)
+        self.main_logic.user_input.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="purple",
+                                         insertbackground=text_fg)
+
+        # Apply to Combobox
         self.main_logic.model_select.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
+
+        # Apply to Entry
         self.main_logic.host_input.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
+
+        # Apply to Buttons using style
         style.configure("TButton", background=button_bg, foreground=fg_color, font=(default_font, 12))
-        style.map("TButton", background=[("active", "#555555" if dark_mode else "#c0c0c0")])
+        style.map("TButton",
+                  background=[("active", "#555555" if dark_mode else "#c0c0c0"),
+                              ("disabled", "#a3a3a3" if dark_mode else "#a3a3a3")])
+
         for attr_name in dir(self.main_logic):
             attr = getattr(self.main_logic, attr_name)
             if isinstance(attr, ttk.Button):
                 attr.config(style="TButton")
+
+        # Apply to Frames using style
         for widget in self.root.winfo_children():
             if isinstance(widget, ttk.Frame):
                 widget.config(style="TFrame")
         style.configure("TFrame", background=frame_bg)
+
+        # Apply to Toplevel (Management Window)
         if self.management_window and self.management_window.winfo_exists():
             self.management_window.config(bg=bg_color)
             for widget in self.management_window.winfo_children():
@@ -103,9 +129,22 @@ class GUI:
                 elif isinstance(widget, tk.Listbox):
                     widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12))
                 elif isinstance(widget, tk.Text):
-                    widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12), insertbackground=text_fg)
+                    widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12),
+                                    insertbackground=text_fg)
                 elif isinstance(widget, ttk.Entry):
                     widget.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
+                elif isinstance(widget, ttk.Combobox):
+                    widget.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
+
+        # Apply to Progressbar
+        style.configure("TProgressbar", troughcolor=progressbar_trough, barcolor=progressbar_bar)
+        style.configure("Vertical.TScrollbar",
+                        troughcolor=bg_color,  # Set trough color
+                        arrowcolor=fg_color,  # Set arrow color
+                        background=bg_color,  # Set background color
+                        darkcolor=bg_color,
+                        lightcolor=bg_color
+                        )
 
     def create_button(self, parent, text, command, style=None, button_hover_bg_color="#2980b9", width=10):
         style = style or button_style
@@ -131,6 +170,11 @@ class GUI:
         host_input.insert(0, self.main_logic.api_url)
         dark_mode_button = self.create_button(header_frame, text="Dark Mode", command=self.toggle_dark_mode)
         dark_mode_button.grid(row=0, column=6, padx=(5, 0))
+
+        # Add the "Open Explorer" button
+        open_explorer_button = self.create_button(header_frame, text="Explorer", command=self.open_file_explorer, width=8)
+        open_explorer_button.grid(row=0, column=7, padx=(5, 0))  # Place it after Dark Mode button
+
         loaded_model_label = ttk.Label(header_frame, text="No Model Loaded", font=(default_font, 12))
         loaded_model_label.grid(row=0, column=3, padx=(10, 0))
         self.main_logic.model_select = model_select
@@ -143,13 +187,15 @@ class GUI:
         chat_frame.grid(row=1, column=0, sticky="nsew", padx=20)
         chat_frame.grid_columnconfigure(0, weight=1)
         chat_frame.grid_rowconfigure(0, weight=1)
-        chat_box = tk.Text(chat_frame, wrap=tk.WORD, state=tk.NORMAL, font=(default_font, 12), spacing1=5, highlightthickness=0, selectbackground="yellow", relief="flat")
+        chat_box = tk.Text(chat_frame, wrap=tk.WORD, state=tk.NORMAL, font=(default_font, 12), spacing1=5,
+                            highlightthickness=0, selectbackground="yellow", relief="flat")
         chat_box.grid(row=0, column=0, sticky="nsew")
-        scrollbar = ttk.Scrollbar(chat_frame, orient="vertical", command=chat_box.yview)
+        scrollbar = ttk.Scrollbar(chat_frame, orient="vertical", command=chat_box.yview, style="Vertical.TScrollbar")
         scrollbar.grid(row=0, column=1, sticky="ns")
         chat_box.configure(yscrollcommand=scrollbar.set)
         chat_box_menu = tk.Menu(chat_box, tearoff=0)
-        chat_box_menu.add_command(label="Copy", command=lambda: self.main_logic.copy_text(chat_box.get("sel.first", "sel.last")))
+        chat_box_menu.add_command(label="Copy",
+                                    command=lambda: self.main_logic.copy_text(chat_box.get("sel.first", "sel.last")))
         chat_box_menu.add_command(label="Paste", command=lambda: chat_box.insert(tk.INSERT, self.root.clipboard_get()))
         chat_box.bind("<Configure>", self.resize_inner_text_widget)
         right_click = "<Button-2>" if platform.system().lower() == "darwin" else "<Button-3>"
@@ -179,25 +225,41 @@ class GUI:
         input_button_frame = ttk.Frame(input_frame)
         input_button_frame.grid(row=0, column=0, sticky="ew")
         input_button_frame.grid_columnconfigure(0, weight=1)
-        user_input = tk.Text(input_button_frame, font=(default_font, 12), height=8, wrap=tk.WORD, relief="flat", selectbackground="purple")
+        user_input = tk.Text(input_button_frame, font=(default_font, 12), height=8, wrap=tk.WORD, relief="flat",
+                                 selectbackground="purple")
         user_input.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         user_input.bind("<Key>", self.handle_key_press)
+        # Add right-click menu to the input field
+        user_input_menu = tk.Menu(user_input, tearoff=0)
+        user_input_menu.add_command(label="Copy",
+                                    command=lambda: self.main_logic.copy_text(user_input.get("sel.first", "sel.last")))
+        user_input_menu.add_command(label="Paste", command=lambda: user_input.insert(tk.INSERT, self.root.clipboard_get()))
+        user_input.bind("<Button-3>", lambda e: user_input_menu.post(e.x_root, e.y_root))
+
         send_button = self.create_button(input_button_frame, text="Send", command=self.main_logic.on_send_button)
         send_button.grid(row=0, column=1)
         send_button.config(state="disabled")
         action_button_frame = ttk.Frame(input_frame)
         action_button_frame.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         action_button_frame.grid_columnconfigure(0, weight=1)
-        export_pdf_button = self.create_button(action_button_frame, text="Export to PDF", command=self.main_logic.export_chat_to_pdf, width=15)
-        save_history_button = self.create_button(action_button_frame, text="Save History", command=self.main_logic.save_chat_history, width=15)
-        load_history_button = self.create_button(action_button_frame, text="Load History", command=self.main_logic.restore_chat_history, width=15)
-        clear_chat_button = self.create_button(action_button_frame, text="Clear Chat", command=self.confirm_clear_chat, width=15)
-        stop_button = self.create_button(action_button_frame, text="Stop", command=self.main_logic.on_stop_button, width=15)
+        export_pdf_button = self.create_button(action_button_frame, text="Export to PDF",
+                                                command=self.main_logic.export_chat_to_pdf, width=15)
+        save_history_button = self.create_button(action_button_frame, text="Save History",
+                                                command=self.main_logic.save_chat_history, width=15)
+        load_history_button = self.create_button(action_button_frame, text="Load History",
+                                                command=self.main_logic.restore_chat_history, width=15)
+        clear_chat_button = self.create_button(action_button_frame, text="Clear Chat", command=self.confirm_clear_chat,
+                                                width=15)
+        stop_button = self.create_button(action_button_frame, text="Stop", command=self.main_logic.on_stop_button,
+                                            width=15)
+        open_chats_dir_button = self.create_button(action_button_frame, text="Open _chats Dir",
+                                                    command=self.open_chats_directory, width=15)
         export_pdf_button.grid(row=0, column=0, sticky="w")
         save_history_button.grid(row=0, column=1, padx=(10, 0))
         load_history_button.grid(row=0, column=2, padx=(10, 0))
         clear_chat_button.grid(row=0, column=3, padx=(10, 0))
         stop_button.grid(row=0, column=4, sticky="e")
+        open_chats_dir_button.grid(row=0, column=5, padx=(10, 0))
         self.main_logic.user_input = user_input
         self.main_logic.send_button = send_button
         self.root.after(100, self.focus_input_field)
@@ -220,7 +282,8 @@ class GUI:
             try:
                 model_size = self.get_model_size_from_ollama_website(model_name)
                 if model_size is None:
-                    messagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.", parent=management_window)
+                    messagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.",
+                                            parent=management_window)
                     return
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}", parent=management_window)
@@ -234,7 +297,14 @@ class GUI:
                 _download_confirmed(model_name)
 
         def _delete():
-            self.main_logic.delete_model(self.main_logic.models_list.get(tk.ACTIVE).strip())
+            model_name = self.main_logic.models_list.get(tk.ACTIVE).strip()
+            confirm = messagebox.askyesno(
+                "Confirm Delete",
+                f"Are you sure you want to delete model '{model_name}'?",
+                parent=management_window,
+            )
+            if confirm:
+                self.main_logic.delete_model(model_name)
 
         def unload_models():
             self.main_logic.free_memory()
@@ -253,7 +323,7 @@ class GUI:
         frame.grid_columnconfigure(0, weight=1)
         model_name_input = ttk.Entry(frame)
         model_name_input.grid(row=0, column=0, sticky="ew", padx=(0, 5))
-        model_name_input.bind("<Return>", lambda event: _download()) # added this line
+        model_name_input.bind("<Return>", lambda event: _download())  # added this line
         download_button = self.create_button(frame, text="Download", command=_download)
         download_button.grid(row=0, column=1, sticky="ew")
         stop_download_button = self.create_button(frame, text="Stop Download", command=self.stop_download)
@@ -268,7 +338,8 @@ class GUI:
         list_action_frame.grid_rowconfigure(0, weight=1)
         models_list = tk.Listbox(list_action_frame)
         models_list.grid(row=0, column=0, sticky="nsew")
-        scrollbar = ttk.Scrollbar(list_action_frame, orient="vertical", command=models_list.yview)
+        scrollbar = ttk.Scrollbar(list_action_frame, orient="vertical", command=models_list.yview,
+                                    style="Vertical.TScrollbar")
         scrollbar.grid(row=0, column=1, sticky="ns")
         models_list.config(yscrollcommand=scrollbar.set)
         delete_button = self.create_button(list_action_frame, text="Delete", command=_delete)
@@ -294,7 +365,9 @@ class GUI:
         self.progress_label.config(text=text)
 
     def confirm_clear_chat(self):
-        if messagebox.askokcancel("Clear Chat", "Are you sure you want to clear the chat history? This action cannot be undone.", parent=self.root):
+        if messagebox.askokcancel("Clear Chat",
+                                    "Are you sure you want to clear the chat history? This action cannot be undone.",
+                                    parent=self.root):
             self.main_logic.clear_chat()
 
     def get_model_size_from_ollama_website(self, model_name):
@@ -324,14 +397,14 @@ class GUI:
             self.download_thread.join(timeout=0.1)
             if self.download_thread.is_alive():
                 print("Thread did not terminate gracefully")
-            if self.management_window and self.management_window.winfo_exists():
-                self.management_window.destroy()
-            if hasattr(self, 'downloaded_file_path'):
-                try:
-                    os.remove(self.downloaded_file_path)
-                    print(f"Deleted file: {self.downloaded_file_path}")
-                except Exception as e:
-                    print(f"Error deleting file: {e}")
+        if self.management_window and self.management_window.winfo_exists():
+            self.management_window.destroy()
+        if hasattr(self, 'downloaded_file_path'):
+            try:
+                os.remove(self.downloaded_file_path)
+                print(f"Deleted file: {self.downloaded_file_path}")
+            except Exception as e:
+                print(f"Error deleting file: {e}")
         else:
             print("No download to stop.")
 
@@ -346,3 +419,26 @@ class GUI:
             if t is thread:
                 return id
         return None
+
+    def open_file_explorer(self):
+        """Opens the file explorer in the current working directory."""
+        cwd = os.getcwd()
+        if platform.system() == "Windows":
+            os.startfile(cwd)
+        elif platform.system() == "Darwin":  # macOS
+            subprocess.Popen(["open", cwd])
+        else:  # Linux
+            subprocess.Popen(["xdg-open", cwd])
+
+    def open_chats_directory(self):
+        """Opens the file explorer in the _chats directory."""
+        chats_dir = os.path.join(os.getcwd(), "_chats")
+        # Create the directory if it doesn't exist
+        if not os.path.exists(chats_dir):
+            os.makedirs(chats_dir)
+        if platform.system() == "Windows":
+            os.startfile(chats_dir)
+        elif platform.system() == "Darwin":  # macOS
+            subprocess.Popen(["open", chats_dir])
+        else:  # Linux
+            subprocess.Popen(["xdg-open", chats_dir])
