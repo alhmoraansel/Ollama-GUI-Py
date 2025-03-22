@@ -174,7 +174,7 @@ This project is protected under the [MIT](https://mit-license.org/) License. For
 
 ## 🙌 Acknowledgments
 ---
-- @Ollama [Ollama](https://github.com/ollama/ollama)
+- [Ollama](https://github.com/ollama/ollama)
 - [Appopener](https://github.com/athrvvvv/AppOpener)
 - [Reportlab JSON2PDF](https://docs.reportlab.com/json2pdf/)
 - [tkinter](https://docs.python.org/3/library/tkinter.html)
