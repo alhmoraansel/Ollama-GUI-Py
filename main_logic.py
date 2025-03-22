@@ -17,7 +17,7 @@ class OllamaInterfaceLogic:
         self.api_url = "http://127.0.0.1:11434"
         self.editor_window: Optional[tk.Toplevel] = None
         self.loaded_model = None
-        self.message_index = 0
+        self.message_index = message_index
         global chat_history
         self.chat_history = chat_history
         self.loading_messages = loading_message_from_json
@@ -137,6 +137,7 @@ class OllamaInterfaceLogic:
                     break
                 data = json.loads(line.decode("utf-8"))
                 if "message" in data:
+                    time.sleep(0.01)
                     yield data["message"]["content"]
 
     def delete_model(self, model_name: str):
@@ -197,6 +198,7 @@ class OllamaInterfaceLogic:
             return
         self.chat_box.delete(1.0, tk.END)
         self.chat_history.clear()
+        self.message_index = 0
 
     def force_clear(self):
         self.chat_box.delete(1.0, tk.END)

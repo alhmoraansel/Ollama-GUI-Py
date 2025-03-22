@@ -19,7 +19,7 @@ button_style = {
     "highlightbackground": "#e8eaed",
     "highlightcolor": "#e8eaed",
 }
-message_indices = []
+message_index = 0
 parse_required = False
 loading_message_from_json = False
 
@@ -60,7 +60,6 @@ def convert_input_to_chat_history(text):
             if i + 1 < len(lines):
                 content = lines[i + 1].strip()
                 history.append({"role": "user", "content": content, "index": index})
-                index += 1
                 i += 2  # Skip the "You:" line and the content line
             else:
                 print(f"Skipping invalid message format: {line}")
