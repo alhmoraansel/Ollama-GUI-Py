@@ -64,7 +64,8 @@
 ```sh
 └── ollama-gui-python/
     ├── build
-    │   └── main_logic
+    │   └── exe.win-amd64-3.13
+    │   |     └── main_logic.exe
     ├── gui.py
     ├── icon.ico
     ├── main_logic.py
