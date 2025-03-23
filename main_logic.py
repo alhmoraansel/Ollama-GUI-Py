@@ -82,7 +82,7 @@ class OllamaInterfaceLogic:
         self.send_button.config(state="disabled")
         self.refresh_button.config(state="normal")
         model_name = self.model_select.get()
-        self.append_text_to_chat(f"{model_name}\n", ("Bold",))
+        self.append_text_to_chat(f"{model_name}\n", ("assistant_label",))
         ai_message = ""
         for i in self.fetch_chat_stream_result():
             if self.stop_button.cget("state") == "disabled":
@@ -382,11 +382,6 @@ def run():
     root.grid_rowconfigure(3, weight=0)
     main_logic = OllamaInterfaceLogic(root)
     gui = GUI(root, main_logic)
-    main_logic.chat_box.tag_configure("Bold", foreground="#ff007b", font=(default_font, 10, "bold"))
-    main_logic.chat_box.tag_configure("Error", foreground="red")
-    main_logic.chat_box.tag_configure("User", foreground="blue", justify="right")
-    main_logic.chat_box.tag_configure("Assistant", foreground="green", justify="left")
-    main_logic.chat_box.tag_configure("Selection", background="yellow")
     root.state("zoomed")
     root.iconbitmap("icon.ico")
     root.mainloop()

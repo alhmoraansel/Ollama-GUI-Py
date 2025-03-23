@@ -76,25 +76,36 @@ class GUI:
         style = ttk.Style()
         global dark_mode, default_font
         bg_color = "#1e1e1e" if dark_mode else "#f0f0f0"
-        fg_color = "#ffffff" if dark_mode else "#000000"
         button_bg = "#4a4a4a" if dark_mode else "#F0F0F0"
-        button_fg = "#ffffff" if dark_mode else "#000000"
         text_bg = "#2b2b2b" if dark_mode else "#ffffff"
         text_fg = "#ffffff" if dark_mode else "#000000"
-        progressbar_trough = "#333333" if dark_mode else "#e0e0e0"
-        progressbar_bar = "#4d94ff"
         frame_bg = "#1e1e1e" if dark_mode else "#f0f0f0"
-        entry_bg = "#444444" if dark_mode else "#ffffff"
-        entry_fg = "#ffffff" if dark_mode else "#000000"
-        selection_color = "grey" if dark_mode else "yellow"
-        selection_text = "#ffffff" if dark_mode else "purple"
+        selection_color = "grey" if dark_mode else "yellow" #colour of background of selected text
+        selection_text = "#ffffff" if dark_mode else "purple" #colour of selected text
+        user_message = "light blue" if dark_mode else "blue"
+        assistant_message = "light green" if dark_mode else "green"
+        other_message = "white" if dark_mode else "black"
+        user_label = "pink" if dark_mode else "green"
+        assistant_label = "orange" if dark_mode else "#805080"
+        caret_color = "yellow" if dark_mode else "black"
 
         self.root.config(bg=bg_color)
-        
+        if self.management_window and self.management_window.winfo_exists():
+            self.management_window.config(bg=bg_color)
+            if self.main_logic.model_select:
+                style_combobox(self.main_logic.model_select,default_font,text_bg,text_fg)
+        if self.main_logic.chat_box and self.main_logic.user_input:
+            self.main_logic.user_input.config(insertbackground =caret_color)
+            self.main_logic.chat_box.config(insertbackground =caret_color)
+            self.main_logic.chat_box.tag_configure("User", foreground=user_message, justify="right")
+            self.main_logic.chat_box.tag_configure("Assistant", foreground=assistant_message, justify="left")
+            self.main_logic.chat_box.tag_configure("user", foreground=user_message, font=(default_font, 12), justify='right')
+            self.main_logic.chat_box.tag_configure("assistant", foreground=assistant_message, font=(default_font, 12), justify='left')
+            self.main_logic.chat_box.tag_configure("other", foreground=other_message, font=(default_font, 12))
+            self.main_logic.chat_box.tag_configure("user_label", foreground=user_label, font=(default_font, 10, "bold"), justify='right')
+            self.main_logic.chat_box.tag_configure("assistant_label", foreground=assistant_label, font=(default_font, 10, "bold"), justify='left')
         for buttons in get_all_buttons(self.root):
             buttons.config(bg = button_bg, fg = text_fg)
-        
-
         for frame in get_all_frames(self.root):
             if isinstance(frame, ttk.Frame):
                 frame.config(style='CustomFrame.TFrame')  # Use a style for ttk.Frame
@@ -102,57 +113,9 @@ class GUI:
                 style.configure('CustomFrame.TFrame', background=frame_bg)
             elif isinstance(frame, tk.Frame):
                 frame.config(bg=frame_bg) # use bg for tk.Frame
-
         for text_box in get_all_text_boxes(self.root):
             text_box.config(bg=text_bg,fg=text_fg,selectbackground=selection_color,selectforeground=selection_text)
-        
         set_label_style(get_all_labels(self.root),frame_bg,text_fg)
-
-
-        # # Apply to Text widgets
-        # self.main_logic.chat_box.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="yellow",
-        #                                 insertbackground=text_fg)
-        # self.main_logic.user_input.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="purple",
-        #                                  insertbackground=text_fg)
-
-        # # Apply to Combobox
-        # self.main_logic.model_select.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
-
-        # # Apply to Entry
-        # self.main_logic.host_input.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
-
-        # # Apply to Frames using style
-        # for widget in self.root.winfo_children():
-        #     if isinstance(widget, ttk.Frame):
-        #         widget.config(style="TFrame")
-        # style.configure("TFrame", background=frame_bg)
-
-        # # Apply to Toplevel (Management Window)
-        #
-        if self.management_window and self.management_window.winfo_exists():
-            self.management_window.config(bg=bg_color)
-        #     for widget in self.management_window.winfo_children():
-        #         if isinstance(widget, ttk.Frame):
-        #             widget.config(style="TFrame")
-        #         elif isinstance(widget, tk.Listbox):
-        #             widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12))
-        #         elif isinstance(widget, tk.Text):
-        #             widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12),
-        #                             insertbackground=text_fg)
-        #         elif isinstance(widget, ttk.Entry):
-        #             widget.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
-        #         elif isinstance(widget, ttk.Combobox):
-        #             widget.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
-
-        # # Apply to Progressbar
-        # style.configure("TProgressbar", troughcolor=progressbar_trough, barcolor=progressbar_bar)
-        # style.configure("Vertical.TScrollbar",
-        #                 troughcolor=bg_color,  # Set trough color
-        #                 arrowcolor=fg_color,  # Set arrow color
-        #                 background=bg_color,  # Set background color
-        #                 darkcolor=bg_color,
-        #                 lightcolor=bg_color
-        #                 )
 
     def create_button(self,parent, text, command, style = button_style, button_hover_bg_color = "#2980b9",width = 3):
         global dark_mode
@@ -216,18 +179,15 @@ class GUI:
         scrollbar = ttk.Scrollbar(chat_frame, orient="vertical", command=chat_box.yview, style="Vertical.TScrollbar")
         scrollbar.grid(row=0, column=1, sticky="ns")
         chat_box.configure(yscrollcommand=scrollbar.set)
+        #CHATBOX
         chat_box_menu = tk.Menu(chat_box, tearoff=0)
-        chat_box_menu.add_command(label="Copy",
-                                    command=lambda: self.main_logic.copy_text(chat_box.get("sel.first", "sel.last")))
+        chat_box_menu.add_command(label="Copy",command=lambda: self.main_logic.copy_text(chat_box.get("sel.first", "sel.last")))
         chat_box_menu.add_command(label="Paste", command=lambda: chat_box.insert(tk.INSERT, self.root.clipboard_get()))
         chat_box.bind("<Configure>", self.resize_inner_text_widget)
         right_click = "<Button-2>" if platform.system().lower() == "darwin" else "<Button-3>"
         chat_box.bind(right_click, lambda e: chat_box_menu.post(e.x_root, e.y_root))
-        chat_box.tag_configure("user", foreground="#003366", font=(default_font, 12), justify='right')
-        chat_box.tag_configure("assistant", foreground="#006400", font=(default_font, 12), justify='left')
-        chat_box.tag_configure("other", foreground="#444444", font=(default_font, 12))
-        chat_box.tag_configure("user_label", foreground="red", font=(default_font, 10, "bold"), justify='right')
-        chat_box.tag_configure("assistant_label", foreground="red", font=(default_font, 10, "bold"), justify='left')
+        chat_box.tag_configure("Bold", foreground="#ff007b", font=(default_font, 10, "bold"))
+        chat_box.tag_configure("Error", foreground="red")
         chat_box.tag_configure("other_label", foreground="red", font=(default_font, 10, "bold"))
         chat_box.bind("<<Modified>>", self.main_logic.on_chat_box_modified)
         self.main_logic.chat_box = chat_box
@@ -253,11 +213,9 @@ class GUI:
         user_input.bind("<Key>", self.handle_key_press)
         # Add right-click menu to the input field
         user_input_menu = tk.Menu(user_input, tearoff=0)
-        user_input_menu.add_command(label="Copy",
-                                    command=lambda: self.main_logic.copy_text(user_input.get("sel.first", "sel.last")))
+        user_input_menu.add_command(label="Copy",command=lambda: self.main_logic.copy_text(user_input.get("sel.first", "sel.last")))
         user_input_menu.add_command(label="Paste", command=lambda: user_input.insert(tk.INSERT, self.root.clipboard_get()))
         user_input.bind("<Button-3>", lambda e: user_input_menu.post(e.x_root, e.y_root))
-
         send_button = self.create_button(input_button_frame, text="Send", command=self.main_logic.on_send_button)
         send_button.grid(row=0, column=1)
         send_button.config(state="disabled")
@@ -298,17 +256,12 @@ class GUI:
             try:
                 model_size = self.get_model_size_from_ollama_website(model_name)
                 if model_size is None:
-                    messagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.",
-                                            parent=management_window)
+                    messagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.",parent=management_window)
                     return
             except Exception as e:
                 messagebox.showerror("Error", f"An error occurred: {e}", parent=management_window)
                 return
-            confirm = messagebox.askyesno(
-                "Confirm Download",
-                f"Are you sure you want to download model '{model_name}'? (Size: {model_size:.2f} MB)",
-                parent=management_window,
-            )
+            confirm = messagebox.askyesno("Confirm Download",f"Are you sure you want to download model '{model_name}'? (Size: {model_size:.2f} MB)",parent=management_window,)
             if confirm:
                 _download_confirmed(model_name)
 
@@ -342,7 +295,7 @@ class GUI:
         model_name_input.bind("<Return>", lambda event: _download())  # added this line
         download_button = self.create_button(frame, text="Download", command=_download)
         download_button.grid(row=0, column=1, sticky="ew")
-        stop_download_button = self.create_button(frame, text="Stop Download", command=self.stop_download)
+        stop_download_button = self.create_button(frame, text="Stop Download", command=self.stop_download,width=10)
         stop_download_button.grid(row=1, column=1, sticky="ew")
         stop_download_button.config(state="disabled")
         tips = tk.Label(frame, text="find models: https://ollama.com/library", fg="blue", cursor="hand2")
@@ -354,13 +307,12 @@ class GUI:
         list_action_frame.grid_rowconfigure(0, weight=1)
         models_list = tk.Listbox(list_action_frame)
         models_list.grid(row=0, column=0, sticky="nsew")
-        scrollbar = ttk.Scrollbar(list_action_frame, orient="vertical", command=models_list.yview,
-                                    style="Vertical.TScrollbar")
+        scrollbar = ttk.Scrollbar(list_action_frame, orient="vertical", command=models_list.yview,style="Vertical.TScrollbar")
         scrollbar.grid(row=0, column=1, sticky="ns")
         models_list.config(yscrollcommand=scrollbar.set)
         delete_button = self.create_button(list_action_frame, text="Delete", command=_delete)
         delete_button.grid(row=0, column=2, sticky="ew", padx=(5, 0))
-        stop_ollama_button = self.create_button(list_action_frame, text="Free Memory", command=unload_models)
+        stop_ollama_button = self.create_button(list_action_frame, text="Free Memory", command=unload_models,width=10)
         stop_ollama_button.grid(row=0, column=3, sticky="ew", padx=(5, 0))
         log_textbox = tk.Text(management_window)
         log_textbox.grid(row=4, column=0, sticky="nsew", padx=10, pady=(0, 10))
@@ -381,10 +333,7 @@ class GUI:
         self.progress_label.config(text=text)
 
     def confirm_clear_chat(self):
-        if messagebox.askokcancel("Clear Chat",
-                                    "Are you sure you want to clear the chat history? This action cannot be undone.",
-                                    parent=self.root):
-            self.main_logic.clear_chat()
+        if messagebox.askokcancel("Clear Chat","Are you sure you want to clear the chat history?",parent=self.root):self.main_logic.clear_chat()
 
     def get_model_size_from_ollama_website(self, model_name):
         try:

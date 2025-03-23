@@ -110,6 +110,9 @@ def get_items_by_key_value(data, target_key, target_value, result_key=None):
 def sort_items_ascending(items, sort_by):
     return sorted(items, key=lambda item: item[sort_by] if isinstance(item, dict) else item) if items and sort_by else items
 
+
+
+#GUI RELATED STUFF
 import tkinter as tk
 from tkinter import ttk
 
@@ -245,3 +248,25 @@ def set_label_style(label_list, bg_color, fg_color):
         else:
             label.config(bg=bg_color, fg=fg_color)
 
+
+
+def style_combobox(combobox, font, bg_color, fg_color):
+    """
+    Styles a Combobox widget.
+
+    Args:
+        combobox: The Combobox widget to style.
+        font:  The font to apply.
+        bg_color: The background color.
+        fg_color: The foreground color.
+    """
+    style = ttk.Style()
+    style.configure("Custom.TCombobox",
+                    background=bg_color,
+                    foreground=fg_color,
+                    font=font,
+                    fieldbackground=bg_color,
+                    )
+    combobox.config(style="Custom.TCombobox")
+    combobox.option_add('*TCombobox.Listbox.background', bg_color)
+    combobox.option_add('*TCombobox.Listbox.foreground', fg_color)
