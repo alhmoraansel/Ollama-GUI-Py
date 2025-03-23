@@ -1,22 +1,14 @@
-import os
-import ctypes
-import platform
-import threading
-import tkinter as tk
-import urllib.request
-import webbrowser
+import os, ctypes, platform, threading, urllib.request, webbrowser, CTkMessagebox, subprocess
+import customtkinter as ctk
 from bs4 import BeautifulSoup
-from tkinter import ttk, font, messagebox, filedialog
 from typing import Optional
-import subprocess  # Import subprocess for opening file explorer
 from shared_globals import *
 
-
 class GUI:
-    def __init__(self, root: tk.Tk, main_logic):
+    def __init__(self,root, main_logic):
         self.process = None
-        self.root = root
         self.main_logic = main_logic
+        self.root = self.main_logic.root
         self.management_window: Optional[tk.Toplevel] = None
         self.download_thread = None
         self.stop_download_flag = False
@@ -48,7 +40,7 @@ class GUI:
             if version and 14 <= float(version) < 15:
                 tcl_version = self.root.tk.call("info", "patchlevel")
                 if self._version_tuple(tcl_version) <= self._version_tuple("8.6.12"):
-                    messagebox.showwarning("Warning", "TK WARNING", parent=self.root)
+                    CTkMessagebox.showwarning("Warning", "TK WARNING", parent=self.root)
 
     def _version_tuple(self, v):
         return tuple(s.zfill(8) for s in v.split("."))
@@ -62,7 +54,7 @@ class GUI:
                 self.main_logic.on_send_button(event)
             return "break"
         else:
-            self.main_logic.send_button.config(state="normal")
+            self.main_logic.send_button.configure(state="normal")
 
     def resize_inner_text_widget(self, event: tk.Event):
         self.main_logic.chat_box.config(wrap=tk.WORD)
@@ -105,7 +97,7 @@ class GUI:
             self.main_logic.chat_box.tag_configure("user_label", foreground=user_label, font=(default_font, 10, "bold"), justify='right')
             self.main_logic.chat_box.tag_configure("assistant_label", foreground=assistant_label, font=(default_font, 10, "bold"), justify='left')
         for buttons in get_all_buttons(self.root):
-            buttons.config(bg = button_bg, fg = text_fg)
+            buttons.configure(fg_color=button_bg, text_color=text_fg)
         for frame in get_all_frames(self.root):
             if isinstance(frame, ttk.Frame):
                 frame.config(style='CustomFrame.TFrame')  # Use a style for ttk.Frame
@@ -119,9 +111,9 @@ class GUI:
 
     def create_button(self,parent, text, command, style = button_style, button_hover_bg_color = "#2980b9",width = 3):
         global dark_mode
-        button = tk.Button(parent, text=text, command=command,width=width, **style)
+        button = ctk.CTkButton(parent, text=text, command=command,width=width, **style)
         def on_enter(event):
-            event.widget.config(bg=button_hover_bg_color)
+            event.widget.configure(bg=button_hover_bg_color)
         def on_leave(event):
             if not dark_mode:
                 target_color = "#F0F0F0"
@@ -136,7 +128,7 @@ class GUI:
                     g = int(g1 + (g2 - g1) * step / 100)
                     b = int(b1 + (b2 - b1) * step / 100)
                     new_color = "#{:02x}{:02x}{:02x}".format(r >> 8, g >> 8, b >> 8)
-                    button.config(bg=new_color)
+                    button.configure(fg_color=new_color)
                     button.after(10, lambda: gradual_change(step + 5))
             gradual_change(0)
         button.bind("<Enter>", on_enter)
@@ -218,7 +210,7 @@ class GUI:
         user_input.bind("<Button-3>", lambda e: user_input_menu.post(e.x_root, e.y_root))
         send_button = self.create_button(input_button_frame, text="Send", command=self.main_logic.on_send_button)
         send_button.grid(row=0, column=1)
-        send_button.config(state="disabled")
+        send_button.configure(state="disabled")
         action_button_frame = ttk.Frame(input_frame)
         action_button_frame.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         action_button_frame.grid_columnconfigure(0, weight=1)
@@ -241,8 +233,8 @@ class GUI:
 
     def show_model_management_window(self):
         def _download_confirmed(model_name):
-            download_button.config(state="disabled")
-            stop_download_button.config(state="normal")
+            download_button.configure(state="disabled")
+            stop_download_button.configure(state="normal")
             model_name_input.config(state="disabled")
             self.stop_download_flag = False
             self.download_thread = threading.Thread(target=self.main_logic.download_model, args=(model_name,))
@@ -251,23 +243,23 @@ class GUI:
         def _download():
             model_name = model_name_input.get().strip()
             if not model_name:
-                messagebox.showerror("Error", "Please enter a model name.", parent=management_window)
+                CTkMessagebox.showerror("Error", "Please enter a model name.", parent=management_window)
                 return
             try:
                 model_size = self.get_model_size_from_ollama_website(model_name)
                 if model_size is None:
-                    messagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.",parent=management_window)
+                    CTkMessagebox.showwarning("Warning", f"Could not determine the size of model '{model_name}'.",parent=management_window)
                     return
             except Exception as e:
-                messagebox.showerror("Error", f"An error occurred: {e}", parent=management_window)
+                CTkMessagebox.showerror("Error", f"An error occurred: {e}", parent=management_window)
                 return
-            confirm = messagebox.askyesno("Confirm Download",f"Are you sure you want to download model '{model_name}'? (Size: {model_size:.2f} MB)",parent=management_window,)
+            confirm = CTkMessagebox.askyesno("Confirm Download",f"Are you sure you want to download model '{model_name}'? (Size: {model_size:.2f} MB)",parent=management_window,)
             if confirm:
                 _download_confirmed(model_name)
 
         def _delete():
             model_name = self.main_logic.models_list.get(tk.ACTIVE).strip()
-            confirm = messagebox.askyesno(
+            confirm = CTkMessagebox.askyesno(
                 "Confirm Delete",
                 f"Are you sure you want to delete model '{model_name}'?",
                 parent=management_window,
@@ -297,7 +289,7 @@ class GUI:
         download_button.grid(row=0, column=1, sticky="ew")
         stop_download_button = self.create_button(frame, text="Stop Download", command=self.stop_download,width=10)
         stop_download_button.grid(row=1, column=1, sticky="ew")
-        stop_download_button.config(state="disabled")
+        stop_download_button.configure(state="disabled")
         tips = tk.Label(frame, text="find models: https://ollama.com/library", fg="blue", cursor="hand2")
         tips.bind("<Button-1>", lambda e: webbrowser.open("https://ollama.com/library"))
         tips.grid(row=1, column=0, sticky="W", padx=(0, 5), pady=5)
@@ -333,7 +325,7 @@ class GUI:
         self.progress_label.config(text=text)
 
     def confirm_clear_chat(self):
-        if messagebox.askokcancel("Clear Chat","Are you sure you want to clear the chat history?",parent=self.root):self.main_logic.clear_chat()
+        if CTkMessagebox.askokcancel("Clear Chat","Are you sure you want to clear the chat history?",parent=self.root):self.main_logic.clear_chat()
 
     def get_model_size_from_ollama_website(self, model_name):
         try:

@@ -9,12 +9,12 @@ default_font = "Congenial"
 button_font = ("Congenial", 12)
 button_style = {
     "font": button_font,
-    "fg":"white",
-    "relief": "flat",
-    "padx": 20,
-    "pady": 10,
+    "text_color": "white",  # Equivalent to "fg" in Tkinter
+    "fg_color": "transparent",  # Background color, "transparent" for no background
+    "hover_color": "gray",  # Color when hovering
+    "border_width": 0,  # Equivalent to "bd" in Tkinter
+    "corner_radius": 10,  # Optional: for rounded corners
     "cursor": "hand2",
-    "bd" :0,
 }
 message_index = 0
 parse_required = False

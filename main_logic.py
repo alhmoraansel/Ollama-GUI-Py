@@ -1,3 +1,4 @@
+import customtkinter
 import json, os, urllib.parse, urllib.request, time, tkinter as tk, subprocess, markdown
 from shared_globals import *
 from threading import Thread
@@ -6,14 +7,21 @@ from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
-from tkinter import ttk, filedialog
+from customtkinter import filedialog
 from gui import *
 from AppOpener import close
 
-class OllamaInterfaceLogic:
-    def __init__(self, root: tk.Tk):
-        self.root = root
-        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+
+class OllamaInterfaceLogic(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Main Class")
+        self.geometry(f"{1100}x{580}")
+        self.grid_columnconfigure(1, weight=1)
+        self.root = self
+        root = self
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
         self.api_url = "http://127.0.0.1:11434"
         self.editor_window: Optional[tk.Toplevel] = None
         self.loaded_model = None
@@ -31,6 +39,20 @@ class OllamaInterfaceLogic:
         assign_global_shortcut('ctrl+p', self.export_chat_to_pdf)
         os.makedirs("_chats", exist_ok=True)
 
+        global default_font
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        root.geometry(f"800x600+{(screen_width - 800) // 2}+{(screen_height - 600) // 2}")
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_rowconfigure(1, weight=1)
+        root.grid_rowconfigure(2, weight=0)
+        root.grid_rowconfigure(3, weight=0)
+        main_logic = self
+        gui = GUI(root, main_logic)
+        root.state("zoomed")
+        root.iconbitmap("icon.ico")
+
+
     def update_host(self):
         self.api_url = self.host_input.get()
 
@@ -38,8 +60,8 @@ class OllamaInterfaceLogic:
         self.update_host()
         self.model_select.config(foreground="black")
         self.model_select.set("Waiting...")
-        self.send_button.config(state="disabled")
-        self.refresh_button.config(state="normal")
+        self.send_button.configure(state="disabled")
+        self.refresh_button.configure(state="normal")
         Thread(target=self.update_model_select, daemon=True).start()
 
     def update_model_select(self):
@@ -53,7 +75,7 @@ class OllamaInterfaceLogic:
         except Exception:
             self.show_error("Error! Please check the host.")
         finally:
-            self.refresh_button.config(state="normal")
+            self.refresh_button.configure(state="normal")
 
     def update_model_list(self):
         if self.models_list.winfo_exists():
@@ -79,8 +101,8 @@ class OllamaInterfaceLogic:
     def generate_ai_response(self):
         self.ai_running = True
         self.show_process_bar()
-        self.send_button.config(state="disabled")
-        self.refresh_button.config(state="normal")
+        self.send_button.configure(state="disabled")
+        self.refresh_button.configure(state="normal")
         model_name = self.model_select.get()
         self.append_text_to_chat(f"{model_name}\n", ("assistant_label",))
         ai_message = ""
@@ -94,16 +116,16 @@ class OllamaInterfaceLogic:
         self.message_index += 1
         self.append_text_to_chat("\n\n", ("Assistant",))
         self.hide_process_bar()
-        self.send_button.config(state="normal")
-        self.refresh_button.config(state="normal")
-        self.stop_button.config(state="normal")
+        self.send_button.configure(state="normal")
+        self.refresh_button.configure(state="normal")
+        self.stop_button.configure(state="normal")
         self.save_chat_history()
         self.chat_box.config(state=tk.NORMAL)
         self.ai_running = False
 
     def on_stop_button(self):
-        self.stop_button.config(state="disabled")
-        self.refresh_button.config(state="normal")
+        self.stop_button.configure(state="disabled")
+        self.refresh_button.configure(state="normal")
         self.hide_process_bar()
         self.ai_running = False
         self.chat_box.config(state=tk.NORMAL)
@@ -167,7 +189,7 @@ class OllamaInterfaceLogic:
         self.append_log_to_inner_textbox(clear=True)
         if not model_name:
             return
-        self.download_button.config(state="disabled")
+        self.download_button.configure(state="disabled")
         req = urllib.request.Request(
             urllib.parse.urljoin(self.api_url, "/api/pull"),
             data=json.dumps({"name": model_name, "insecure": insecure, "stream": True}).encode("utf-8"),
@@ -191,7 +213,7 @@ class OllamaInterfaceLogic:
             self.update_model_list()
             self.update_model_select()
             if self.download_button.winfo_exists():
-                self.download_button.config(state="disabled")
+                self.download_button.configure(state="disabled")
 
     def clear_chat(self):
         if self.ai_running:
@@ -281,16 +303,16 @@ class OllamaInterfaceLogic:
         self.model_select.set(text)
         self.model_select.config(foreground="red")
         self.model_select["values"] = []
-        self.send_button.config(state="disabled")
+        self.send_button.configure(state="disabled")
 
     def show_process_bar(self):
         self.progress.grid(row=0, column=0, sticky="nsew")
-        self.stop_button.config(state="normal")
+        self.stop_button.configure(state="normal")
         self.progress.start(10)
 
     def hide_process_bar(self):
         self.progress.stop()
-        self.stop_button.config(state="disabled")
+        self.stop_button.configure(state="disabled")
         self.progress.grid_remove()
 
     def copy_text(self, text: str):
@@ -369,22 +391,9 @@ class OllamaInterfaceLogic:
             self.chat_history = convert_input_to_chat_history(chat_box_content)
         self.chat_box.edit_modified(False)
 
-def run():
-    global default_font
-    root = tk.Tk()
-    root.title("Ollama GUI")
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    root.geometry(f"800x600+{(screen_width - 800) // 2}+{(screen_height - 600) // 2}")
-    root.grid_columnconfigure(0, weight=1)
-    root.grid_rowconfigure(1, weight=1)
-    root.grid_rowconfigure(2, weight=0)
-    root.grid_rowconfigure(3, weight=0)
-    main_logic = OllamaInterfaceLogic(root)
-    gui = GUI(root, main_logic)
-    root.state("zoomed")
-    root.iconbitmap("icon.ico")
-    root.mainloop()
 
-if __name__ == "__main__":
-    run()
+
+if __name__=="__main__":
+	app = OllamaInterfaceLogic()
+	app.mainloop()
+	
