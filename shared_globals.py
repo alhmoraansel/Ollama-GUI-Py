@@ -9,15 +9,12 @@ default_font = "Congenial"
 button_font = ("Congenial", 12)
 button_style = {
     "font": button_font,
+    "fg":"white",
     "relief": "flat",
-    "bd": 0,
-    "highlightthickness": 0,
     "padx": 20,
     "pady": 10,
     "cursor": "hand2",
-    "borderwidth": 0,
-    "highlightbackground": "#e8eaed",
-    "highlightcolor": "#e8eaed",
+    "bd" :0,
 }
 message_index = 0
 parse_required = False
@@ -112,3 +109,139 @@ def get_items_by_key_value(data, target_key, target_value, result_key=None):
 
 def sort_items_ascending(items, sort_by):
     return sorted(items, key=lambda item: item[sort_by] if isinstance(item, dict) else item) if items and sort_by else items
+
+import tkinter as tk
+from tkinter import ttk
+
+def get_all_buttons(root):
+    """
+    Recursively retrieves all Button and ttk.Button widgets within a Tkinter root window.
+
+    Args:
+        root: The Tkinter root window or any container widget.
+
+    Returns:
+        list: A list of all Button and ttk.Button widgets found.
+    """
+    buttons = []
+    widgets = root.winfo_children()  #gets all the child widgets.
+    for widget in widgets:
+        if isinstance(widget, tk.Button) or isinstance(widget, ttk.Button):
+            buttons.append(widget)
+        else:
+            buttons.extend(get_all_buttons(widget))  # Recurse into child containers.
+    return buttons
+
+
+def get_all_frames(root):
+    """
+    Recursively retrieves all Frame and ttk.Frame widgets.
+
+    Args:
+        root: The Tkinter root window or any container widget.
+
+    Returns:
+        list: A list of all Frame and ttk.Frame widgets found.
+    """
+    frames = []
+    widgets = root.winfo_children()
+
+    for widget in widgets:
+        if isinstance(widget, tk.Frame) or isinstance(widget, ttk.Frame):
+            frames.append(widget)
+            frames.extend(get_all_frames(widget))  # Recurse into child frames.
+        else:
+            frames.extend(get_all_frames(widget))
+    return frames
+
+
+def get_all_text_boxes(root):
+    """
+    Recursively retrieves all Text widgets.
+
+    Args:
+        root: The Tkinter root window or any container widget.
+
+    Returns:
+        list: A list of all Text widgets found.
+    """
+    text_boxes = []
+    widgets = root.winfo_children()
+
+    for widget in widgets:
+        if isinstance(widget, tk.Text):
+            text_boxes.append(widget)
+        else:
+            text_boxes.extend(get_all_text_boxes(widget))
+    return text_boxes
+
+
+def get_all_entries(root):
+    """Recursively retrieves all Entry widgets.
+
+    Args:
+        root: The Tkinter root or container widget.
+
+    Returns:
+        list: A list of all Entry widgets.
+    """
+    entries = []
+    widgets = root.winfo_children()
+    for widget in widgets:
+        if isinstance(widget, tk.Entry) or isinstance(widget, ttk.Entry):
+            entries.append(widget)
+        else:
+            entries.extend(get_all_entries(widget))
+    return entries
+
+def set_entry_style(entry_list, bg_color, fg_color):
+    """Sets the background and foreground colors for a list of Entry widgets.
+
+    Args:
+        entry_list: A list of Tkinter Entry or ttk.Entry widgets.
+        bg_color: The background color to set.
+        fg_color: The foreground color to set.
+    """
+    for entry in entry_list:
+        if isinstance(entry, ttk.Entry):
+            style = ttk.Style()
+            style.configure("CustomEntry.TEntry", background=bg_color, foreground=fg_color, fieldbackground=bg_color)  # Added fieldbackground
+            entry.config(style="CustomEntry.TEntry")
+        else:
+            entry.config(bg=bg_color, fg=fg_color)
+
+
+def get_all_labels(root):
+    """Recursively retrieves all Label widgets.
+
+    Args:
+        root: The Tkinter root or container widget.
+
+    Returns:
+        list: A list of all Label widgets.
+    """
+    labels = []
+    widgets = root.winfo_children()
+    for widget in widgets:
+        if isinstance(widget, tk.Label) or isinstance(widget, ttk.Label):
+            labels.append(widget)
+        else:
+            labels.extend(get_all_labels(widget))
+    return labels
+
+def set_label_style(label_list, bg_color, fg_color):
+    """Sets the background and foreground colors for a list of Label widgets.
+
+    Args:
+        label_list: A list of Tkinter Label or ttk.Label widgets.
+        bg_color: The background color to set.
+        fg_color: The foreground color to set.
+    """
+    for label in label_list:
+        if isinstance(label, ttk.Label):
+            style = ttk.Style()
+            style.configure("CustomLabel.TLabel", background=bg_color, foreground=fg_color)
+            label.config(style="CustomLabel.TLabel")
+        else:
+            label.config(bg=bg_color, fg=fg_color)
+

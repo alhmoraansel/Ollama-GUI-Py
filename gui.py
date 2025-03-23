@@ -77,7 +77,7 @@ class GUI:
         global dark_mode, default_font
         bg_color = "#1e1e1e" if dark_mode else "#f0f0f0"
         fg_color = "#ffffff" if dark_mode else "#000000"
-        button_bg = "#333333" if dark_mode else "#e0e0e0"
+        button_bg = "#4a4a4a" if dark_mode else "#F0F0F0"
         button_fg = "#ffffff" if dark_mode else "#000000"
         text_bg = "#2b2b2b" if dark_mode else "#ffffff"
         text_fg = "#ffffff" if dark_mode else "#000000"
@@ -86,72 +86,98 @@ class GUI:
         frame_bg = "#1e1e1e" if dark_mode else "#f0f0f0"
         entry_bg = "#444444" if dark_mode else "#ffffff"
         entry_fg = "#ffffff" if dark_mode else "#000000"
+        selection_color = "grey" if dark_mode else "yellow"
+        selection_text = "#ffffff" if dark_mode else "purple"
 
         self.root.config(bg=bg_color)
+        
+        for buttons in get_all_buttons(self.root):
+            buttons.config(bg = button_bg, fg = text_fg)
+        
 
-        # Apply to Text widgets
-        self.main_logic.chat_box.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="yellow",
-                                        insertbackground=text_fg)
-        self.main_logic.user_input.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="purple",
-                                         insertbackground=text_fg)
+        for frame in get_all_frames(self.root):
+            if isinstance(frame, ttk.Frame):
+                frame.config(style='CustomFrame.TFrame')  # Use a style for ttk.Frame
+                style = ttk.Style()
+                style.configure('CustomFrame.TFrame', background=frame_bg)
+            elif isinstance(frame, tk.Frame):
+                frame.config(bg=frame_bg) # use bg for tk.Frame
 
-        # Apply to Combobox
-        self.main_logic.model_select.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
+        for text_box in get_all_text_boxes(self.root):
+            text_box.config(bg=text_bg,fg=text_fg,selectbackground=selection_color,selectforeground=selection_text)
+        
+        set_label_style(get_all_labels(self.root),frame_bg,text_fg)
 
-        # Apply to Entry
-        self.main_logic.host_input.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
 
-        # Apply to Buttons using style
-        style.configure("TButton", background=button_bg, foreground=fg_color, font=(default_font, 12))
-        style.map("TButton",
-                  background=[("active", "#555555" if dark_mode else "#c0c0c0"),
-                              ("disabled", "#a3a3a3" if dark_mode else "#a3a3a3")])
+        # # Apply to Text widgets
+        # self.main_logic.chat_box.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="yellow",
+        #                                 insertbackground=text_fg)
+        # self.main_logic.user_input.config(bg=text_bg, fg=text_fg, font=(default_font, 12), selectbackground="purple",
+        #                                  insertbackground=text_fg)
 
-        for attr_name in dir(self.main_logic):
-            attr = getattr(self.main_logic, attr_name)
-            if isinstance(attr, ttk.Button):
-                attr.config(style="TButton")
+        # # Apply to Combobox
+        # self.main_logic.model_select.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
 
-        # Apply to Frames using style
-        for widget in self.root.winfo_children():
-            if isinstance(widget, ttk.Frame):
-                widget.config(style="TFrame")
-        style.configure("TFrame", background=frame_bg)
+        # # Apply to Entry
+        # self.main_logic.host_input.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
 
-        # Apply to Toplevel (Management Window)
+        # # Apply to Frames using style
+        # for widget in self.root.winfo_children():
+        #     if isinstance(widget, ttk.Frame):
+        #         widget.config(style="TFrame")
+        # style.configure("TFrame", background=frame_bg)
+
+        # # Apply to Toplevel (Management Window)
+        #
         if self.management_window and self.management_window.winfo_exists():
             self.management_window.config(bg=bg_color)
-            for widget in self.management_window.winfo_children():
-                if isinstance(widget, ttk.Frame):
-                    widget.config(style="TFrame")
-                elif isinstance(widget, ttk.Button):
-                    widget.config(style="TButton")
-                elif isinstance(widget, tk.Listbox):
-                    widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12))
-                elif isinstance(widget, tk.Text):
-                    widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12),
-                                    insertbackground=text_fg)
-                elif isinstance(widget, ttk.Entry):
-                    widget.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
-                elif isinstance(widget, ttk.Combobox):
-                    widget.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
+        #     for widget in self.management_window.winfo_children():
+        #         if isinstance(widget, ttk.Frame):
+        #             widget.config(style="TFrame")
+        #         elif isinstance(widget, tk.Listbox):
+        #             widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12))
+        #         elif isinstance(widget, tk.Text):
+        #             widget.config(bg=text_bg, fg=text_fg, font=(default_font, 12),
+        #                             insertbackground=text_fg)
+        #         elif isinstance(widget, ttk.Entry):
+        #             widget.config(foreground=fg_color, background=entry_bg, font=(default_font, 12))
+        #         elif isinstance(widget, ttk.Combobox):
+        #             widget.config(foreground=fg_color, background=button_bg, font=(default_font, 12))
 
-        # Apply to Progressbar
-        style.configure("TProgressbar", troughcolor=progressbar_trough, barcolor=progressbar_bar)
-        style.configure("Vertical.TScrollbar",
-                        troughcolor=bg_color,  # Set trough color
-                        arrowcolor=fg_color,  # Set arrow color
-                        background=bg_color,  # Set background color
-                        darkcolor=bg_color,
-                        lightcolor=bg_color
-                        )
+        # # Apply to Progressbar
+        # style.configure("TProgressbar", troughcolor=progressbar_trough, barcolor=progressbar_bar)
+        # style.configure("Vertical.TScrollbar",
+        #                 troughcolor=bg_color,  # Set trough color
+        #                 arrowcolor=fg_color,  # Set arrow color
+        #                 background=bg_color,  # Set background color
+        #                 darkcolor=bg_color,
+        #                 lightcolor=bg_color
+        #                 )
 
-    def create_button(self, parent, text, command, style=None, button_hover_bg_color="#2980b9", width=10):
-        style = style or button_style
-        button = tk.Button(parent, text=text, command=command, width=width, **style)
-        initial_bg = style.get("background", button["background"])
-        button.bind("<Enter>", lambda e: e.widget.config(bg=button_hover_bg_color))
-        button.bind("<Leave>", lambda e: e.widget.config(bg=initial_bg))
+    def create_button(self,parent, text, command, style = button_style, button_hover_bg_color = "#2980b9",width = 3):
+        global dark_mode
+        button = tk.Button(parent, text=text, command=command,width=width, **style)
+        def on_enter(event):
+            event.widget.config(bg=button_hover_bg_color)
+        def on_leave(event):
+            if not dark_mode:
+                target_color = "#F0F0F0"
+            else:
+                target_color = "#4a4a4a"
+            original_color = button["bg"]
+            def gradual_change(step):
+                if step <= 100:
+                    r1, g1, b1 = button.winfo_rgb(original_color)
+                    r2, g2, b2 = button.winfo_rgb(target_color)
+                    r = int(r1 + (r2 - r1) * step / 100)
+                    g = int(g1 + (g2 - g1) * step / 100)
+                    b = int(b1 + (b2 - b1) * step / 100)
+                    new_color = "#{:02x}{:02x}{:02x}".format(r >> 8, g >> 8, b >> 8)
+                    button.config(bg=new_color)
+                    button.after(10, lambda: gradual_change(step + 5))
+            gradual_change(0)
+        button.bind("<Enter>", on_enter)
+        button.bind("<Leave>", on_leave)
         return button
 
     def _header_frame(self):
@@ -168,13 +194,11 @@ class GUI:
         host_input = ttk.Entry(header_frame, width=24)
         host_input.grid(row=0, column=5, padx=(5, 15))
         host_input.insert(0, self.main_logic.api_url)
-        dark_mode_button = self.create_button(header_frame, text="Dark Mode", command=self.toggle_dark_mode)
+        dark_mode_button = self.create_button(header_frame, text="Dark Mode", command=self.toggle_dark_mode,width=10)
         dark_mode_button.grid(row=0, column=6, padx=(5, 0))
-
         # Add the "Open Explorer" button
         open_explorer_button = self.create_button(header_frame, text="Explorer", command=self.open_file_explorer, width=8)
         open_explorer_button.grid(row=0, column=7, padx=(5, 0))  # Place it after Dark Mode button
-
         loaded_model_label = ttk.Label(header_frame, text="No Model Loaded", font=(default_font, 12))
         loaded_model_label.grid(row=0, column=3, padx=(10, 0))
         self.main_logic.model_select = model_select
@@ -187,8 +211,7 @@ class GUI:
         chat_frame.grid(row=1, column=0, sticky="nsew", padx=20)
         chat_frame.grid_columnconfigure(0, weight=1)
         chat_frame.grid_rowconfigure(0, weight=1)
-        chat_box = tk.Text(chat_frame, wrap=tk.WORD, state=tk.NORMAL, font=(default_font, 12), spacing1=5,
-                            highlightthickness=0, selectbackground="yellow", relief="flat")
+        chat_box = tk.Text(chat_frame, wrap=tk.WORD, state=tk.NORMAL, font=(default_font, 12), spacing1=5,highlightthickness=0,relief="flat")
         chat_box.grid(row=0, column=0, sticky="nsew")
         scrollbar = ttk.Scrollbar(chat_frame, orient="vertical", command=chat_box.yview, style="Vertical.TScrollbar")
         scrollbar.grid(row=0, column=1, sticky="ns")
@@ -225,8 +248,7 @@ class GUI:
         input_button_frame = ttk.Frame(input_frame)
         input_button_frame.grid(row=0, column=0, sticky="ew")
         input_button_frame.grid_columnconfigure(0, weight=1)
-        user_input = tk.Text(input_button_frame, font=(default_font, 12), height=8, wrap=tk.WORD, relief="flat",
-                                 selectbackground="purple")
+        user_input = tk.Text(input_button_frame, font=(default_font, 12), height=8, wrap=tk.WORD, relief="flat")
         user_input.grid(row=0, column=0, sticky="ew", padx=(0, 10))
         user_input.bind("<Key>", self.handle_key_press)
         # Add right-click menu to the input field
@@ -242,23 +264,17 @@ class GUI:
         action_button_frame = ttk.Frame(input_frame)
         action_button_frame.grid(row=1, column=0, sticky="ew", pady=(10, 0))
         action_button_frame.grid_columnconfigure(0, weight=1)
-        export_pdf_button = self.create_button(action_button_frame, text="Export to PDF",
-                                                command=self.main_logic.export_chat_to_pdf, width=15)
-        save_history_button = self.create_button(action_button_frame, text="Save History",
-                                                command=self.main_logic.save_chat_history, width=15)
-        load_history_button = self.create_button(action_button_frame, text="Load History",
-                                                command=self.main_logic.restore_chat_history, width=15)
-        clear_chat_button = self.create_button(action_button_frame, text="Clear Chat", command=self.confirm_clear_chat,
-                                                width=15)
-        stop_button = self.create_button(action_button_frame, text="Stop", command=self.main_logic.on_stop_button,
-                                            width=15)
-        open_chats_dir_button = self.create_button(action_button_frame, text="Open _chats Dir",
-                                                    command=self.open_chats_directory, width=15)
+        export_pdf_button = self.create_button(action_button_frame, text="Export to PDF",command=self.main_logic.export_chat_to_pdf, width=15)
+        save_history_button = self.create_button(action_button_frame, text="Save History",command=self.main_logic.save_chat_history, width=15)
+        load_history_button = self.create_button(action_button_frame, text="Load History",command=self.main_logic.restore_chat_history, width=15)
+        clear_chat_button = self.create_button(action_button_frame, text="Clear Chat", command=self.confirm_clear_chat,width=15)
+        stop_button = self.create_button(action_button_frame, text="Stop", command=self.main_logic.on_stop_button,width=15)
+        open_chats_dir_button = self.create_button(action_button_frame, text="Open _chats Dir",command=self.open_chats_directory, width=15)
         export_pdf_button.grid(row=0, column=0, sticky="w")
         save_history_button.grid(row=0, column=1, padx=(10, 0))
         load_history_button.grid(row=0, column=2, padx=(10, 0))
         clear_chat_button.grid(row=0, column=3, padx=(10, 0))
-        stop_button.grid(row=0, column=4, sticky="e")
+        stop_button.grid(row=0, column=4, padx=(10, 0))
         open_chats_dir_button.grid(row=0, column=5, padx=(10, 0))
         self.main_logic.user_input = user_input
         self.main_logic.send_button = send_button
